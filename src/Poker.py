@@ -28,9 +28,11 @@ class Player:
     def __init__(self, name, stack):
         self.name = name
         self.stack = stack
-    #def raise(self, amount):
-    #def fold(self):
-    #def call(self, amount):
+    '''def raise(self, amount):
+
+    def fold(self):
+
+    def call(self, amount):'''
 
 class Card:
     '''The Card class has instance variables SUIT and VALUE'''
@@ -38,6 +40,10 @@ class Card:
         self.value = value
         self.suit = suit
 
+class Pot:
+    def __init__(self, )
+
 def find_strflsh(cards, board):
     entire = cards + board
-    
+    for dex in range(len(entire)):
+        rest = entire[:dex + 1] + entire[dex + 1:]
