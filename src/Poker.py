@@ -40,9 +40,6 @@ class Card:
         self.value = value
         self.suit = suit
 
-class Pot:
-    def __init__(self, )
-
 def find_strflsh(cards, board):
     entire = cards + board
     for dex in range(len(entire)):
