@@ -29,31 +29,64 @@ class Card:
         return Card.values[self.value] + Card.suits[self.suit]
 
 class Hand:
-    def __init__(self, deck, size=2):
-        self.cards = [deck.pop() for _ in range(size)]
+    def __init__(self, size=2):
+        self.reset()
+        self.size = size
     
-    def best_hand(self, board):
+    def reset(self):
+        self.cards = []
+    
+    def score(self, board):
+        all_cards = self.cards + board
+        total = len(all_cards)
         
+        max_score = 0
         
+        # try omitting cards i and j
+        for i in range(total):
+            for j in range(i+1, total):
+                max_score = max(max_score, calc_hand.score(all_cards[:i]+all_cards[i+1:j]+all_cards[j+1:]))
+        
+        return max_score
 
-class Player:
-    '''The Player class has instance variables NAME, the name of the player, and STACK, the amount of chips the player has'''
-    def __init__(self, name, stack):
-        self.name = name
-        self.stack = stack
-    '''def raise(self, amount):
+class Board:
+    flop = 3
+    turn = 1
+    river = 1
+    
+    def __init__(self):
+        self.reset()
+    
+    def reset(self):
+        self.cards = []
+        self.burn = []
 
-    def fold(self):
+from random import shuffle
 
-    def call(self, amount):'''
-
-class Card:
-    '''The Card class has instance variables SUIT and VALUE'''
-    def __init__(self, value, suit):
-        self.value = value
-        self.suit = suit
-
-def find_strflsh(cards, board):
-    entire = cards + board
-    for dex in range(len(entire)):
-        rest = entire[:dex + 1] + entire[dex + 1:]
+class Deck:
+    def __init__(self):
+        self.reset()
+    
+    def reset(self):
+        self.cards = []
+        for v in Card.values:
+            for s in Card.suits:
+                self.cards.append(Card(v, s))
+        shuffle(self.cards)
+    
+    def pop(self):
+        return self.cards.pop()
+    
+    def deal(self, obj):
+        if isinstance(obj, Hand):
+            for _ in range(obj.size):
+                obj.cards.append(self.pop())
+        elif isinstance(obj, Board):
+            if len(obj.cards) == 0:
+                obj.burn.append(self.pop())
+                for _ in range(obj.flop): obj.cards.append(self.pop())
+            elif len(obj.cards) == obj.flop:
+                for _ in range(obj.turn): obj.cards.append(self.pop())
+            elif len(obj.cards) == obj.flop + obj.turn:
+                for _ in range(obj.river): obj.cards.append(self.pop())
+    
