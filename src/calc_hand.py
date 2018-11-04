@@ -1,18 +1,30 @@
-def scores(h):
+def score(h):
     assert len(h) == 5
     
     h.sort()
     
+    strength = 0
+    if pair(h): strength = 1
+    elif two_pair(h): strength = 2
+    elif triple(h): strength = 3
+    elif straight(h): strength = 4
+    elif flush(h): strength = 5
+    elif full_house(h): strength = 6
+    elif four_of_a_kind(h): strength = 7
+    if straight_flush(h): strength = 8
+    
     # high card to low card
     if flush(h) or high_card(h):
-        return [c.value for c in h][::-1]
+        vals = [c.value for c in h]
     # identical cards take precedent
-    if four_of_a_kind(h) or full_house(h) or triple(h) or two_pair(h) or pair(h):
+    elif four_of_a_kind(h) or full_house(h) or triple(h) or two_pair(h) or pair(h):
         h = sorted(h, key=lambda c: c.value + h.count(c)*1000)
-        return [c.value for c in h][::-1]
+        vals = [c.value for c in h]
     # straight
-    if straight(h):
-        return [c.value for c in h][:4:-1]+[h[4]] if h[4].value == 14 else [c.value for c in h][::-1]
+    elif straight(h):
+        vals = [h[4]]+[c.value for c in h][:4] if h[4].value == 14 else [c.value for c in h]
+    
+    return strength * 15**5 + sum([vals[i] * 15**i for i in range(5)])
 
 def straight_flush(h):
     return straight(h) and flush(h)
