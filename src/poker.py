@@ -37,7 +37,10 @@ class Hand:
         self.cards = []
     
     def score(self, board):
-        all_cards = self.cards + board
+        assert len(self.cards) == self.size
+        assert len(board.cards) == board.flop + board.turn + board.river
+        
+        all_cards = self.cards + board.cards
         total = len(all_cards)
         
         max_score = 0
@@ -48,6 +51,9 @@ class Hand:
                 max_score = max(max_score, calc_hand.score(all_cards[:i]+all_cards[i+1:j]+all_cards[j+1:]))
         
         return max_score
+    
+    def __str__(self):
+        return ' '.join(str(c) for c in self.cards)
 
 class Board:
     flop = 3
@@ -60,6 +66,9 @@ class Board:
     def reset(self):
         self.cards = []
         self.burn = []
+    
+    def __str__(self):
+        return ' '.join(str(c) for c in self.cards)
 
 from random import shuffle
 
