@@ -1,7 +1,18 @@
-def score(hand):
-    assert len(hand) == 5
+def scores(h):
+    assert len(h) == 5
     
-    hand.sort()
+    h.sort()
+    
+    # high card to low card
+    if flush(h) or high_card(h):
+        return [c.value for c in h][::-1]
+    # identical cards take precedent
+    if four_of_a_kind(h) or full_house(h) or triple(h) or two_pair(h) or pair(h):
+        h = sorted(h, key=lambda c: c.value + h.count(c)*1000)
+        return [c.value for c in h][::-1]
+    # straight
+    if straight(h):
+        return [c.value for c in h][:4:-1]+[h[4]] if h[4].value == 14 else [c.value for c in h][::-1]
 
 def straight_flush(h):
     return straight(h) and flush(h)
