@@ -5,8 +5,8 @@ def play_game(small_amt, big_amt, start_amt):
     def play_rounds(players):
         small = players[0]
         big = players[1]
-        small.raise(small_amt)
-        big.raise(big_amt)
+        small.bet(small_amt)
+        big.bet(big_amt)
         pot = small_amt + big_amt
         most_in = big.chips_in
         active_players = lst(players)
@@ -20,7 +20,7 @@ def play_game(small_amt, big_amt, start_amt):
                         act_valid = False
                         act = input("{0}'s action? ".format(p.name))
                         while act_valid == False:
-                            while not in ['fold', 'check', 'call', 'raise']:
+                            while act not in ['fold', 'check', 'call', 'bet']:
                                 act = input("Invalid action! {0}'s action? ".format(p.name))
                             if act == 'check':
                                 if p.chips_in < most_in:
@@ -33,19 +33,19 @@ def play_game(small_amt, big_amt, start_amt):
                                 act_valid = True
                             elif act == 'call':
                                 if p.stack >= (most_in - p.chips_in):
-                                    p.raise(most_in - p.chips_in)
+                                    p.bet(most_in - p.chips_in)
                                     pot += (most_in - p.chips_in)
                                     act_valid = True
                                 else:
-                                    p.raise(p.stack)
+                                    p.bet(p.stack)
                                     pot += p.stack
                                     act_valid = True
-                            elif act == 'raise':
+                            elif act == 'bet':
                                 amount = input('By how much? ')
                                 if amount > p.stack or amount <= (most_in - p.chips_in):
-                                    act = input("You cannot raise that amount. {0}'s action? ".format(p.name))
+                                    act = input("You cannot bet that amount. {0}'s action? ".format(p.name))
                                 else:
-                                    p.raise(amount)
+                                    p.bet(amount)
                                     pot += amount
                                     most_in = p.chips_in
                                     act_valid = True
@@ -78,7 +78,7 @@ class Player:
     def __init__(self, name, stack):
         self.name = name
         self.stack = stack
-    def raise(self, amount):
+    def bet(self, amount):
         self.stack -= amount
         self.chips_in += amount
 
