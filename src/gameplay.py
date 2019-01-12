@@ -61,11 +61,11 @@ def play_game(small_amt, big_amt, start_amt):
                         break
                     current = (current + 1) % len(players)
             print('bets done')
-            if len([p in players if p.still_in]) == 1:
+            if len([p for p in players if p.still_in]) == 1:
                 for p in players:
                     if p.still_in:
                         print("{0} wins {1}!".format(p.name, pot))
-                `       p.stack += pot
+                        p.stack += pot
                         p.chips_in = 0
                 break
             current = 0
