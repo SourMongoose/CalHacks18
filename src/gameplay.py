@@ -12,7 +12,7 @@ def play_game(small_amt, big_amt, start_amt):
         print("Big blind: {0}".format(players[1].name))
         most_in = big.chips_in
         last = 1
-        current = 2
+        current = (last + 1) % len(players)
 
 
         for _ in range(4):
@@ -56,6 +56,8 @@ def play_game(small_amt, big_amt, start_amt):
                                     pot += amount
                                     most_in = cp.chips_in
                                     last = (current + len(players) - 1) % len(players)
+                                    while players[last].still_in == False:
+                                        last = (last - 1) % len(players)
                                     act_valid = True
                     if current == last:
                         break
