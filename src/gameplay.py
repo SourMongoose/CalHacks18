@@ -13,9 +13,13 @@ def play_game(small_amt, big_amt, start_amt):
         most_in = big.chips_in
         last = 1
         current = (last + 1) % len(players)
+        d = Deck()
+        b = Board()
+        for p in players:
+            d.deal(p.hand)
 
 
-        for _ in range(4):
+        for i in range(4):
             while True:
                 cp = players[current]
                 if cp.still_in == False:
@@ -23,6 +27,9 @@ def play_game(small_amt, big_amt, start_amt):
                 else:
                     print("{0}'s stack: {1}".format(cp.name, str(cp.stack)))
                     print('Pot:', str(pot))
+                    print("{0}'s hand: {1}".format(cp.name, cp.hand))
+                    print('Board: {0}'.format(b))
+
                     if cp.stack > 0:
                         act_valid = False
                         act = input("{0}'s action? ".format(cp.name))
@@ -63,25 +70,30 @@ def play_game(small_amt, big_amt, start_amt):
                         break
                     current = (current + 1) % len(players)
             print('bets done')
+            if i < 3:
+                d.deal(b)
             if len([p for p in players if p.still_in]) == 1:
                 for p in players:
                     if p.still_in:
-                        print("{0} wins {1}!".format(p.name, pot))
+                        print("{0} wins {1}!".format(p.name, str(pot)))
                         p.stack += pot
                         p.chips_in = 0
                 break
             current = 0
             last = len(players) - 1
 
-        #cards_shown_case
-
-
-
+        winner = max([p for p in players if p.still_in], key=lambda x: x.hand.score(b))
         for p in list(players):
+            if p.still_in:
+                print("{0}'s hand: {1}".format(cp.name, cp.hand))
             p.still_in = True
             p.chips_in = 0
+            p.hand.reset()
             if p.stack == 0:
                 players.remove(p)
+        print("{0} wins {1}!".format(winner.name, str(pot)))
+        winner.stack += pot
+
         if len(players) == 1:
             return print(players[0].name, ' wins!')
         else:
@@ -104,6 +116,7 @@ def play_game(small_amt, big_amt, start_amt):
 class Player:
     still_in = True
     chips_in = 0
+    hand = Hand()
     def __init__(self, name, stack):
         self.name = name
         self.stack = stack
