@@ -22,7 +22,7 @@ def score(h):
         vals = [c.value for c in h]
     # straight
     elif straight(h):
-        vals = [h[4]]+[c.value for c in h][:4] if h[4].value == 14 else [c.value for c in h]
+        vals = [h[4].value]+[c.value for c in h][:4] if h[4].value == 14 else [c.value for c in h]
     
     return strength * 15**5 + sum([vals[i] * 15**i for i in range(5)])
 
