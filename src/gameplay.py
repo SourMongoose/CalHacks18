@@ -2,7 +2,9 @@ import poker
 
 def play_game(small_amt, big_amt, start_amt):
 
+    # ONE ROUND OF PLAY
     def play_rounds(players):
+        # INITIALIZED VARIABLES
         small = players[0]
         big = players[1]
         small.bet(small_amt)
@@ -19,59 +21,76 @@ def play_game(small_amt, big_amt, start_amt):
             d.deal(p.hand)
         round_over = False
 
-
+        # BETTING ROUNDS
         for i in range(4):
             while True:
                 cp = players[current]
                 if cp.still_in == False:
                     current = (current + 1) % len(players)
                 else:
-                    print("{0}'s stack: {1}".format(cp.name, str(cp.stack)))
+                    print(f"It is {cp.name}'s turn")
+                    print(f'Stack: {cp.stack}')
                     print('Pot:', str(pot))
-                    print("{0}'s hand: {1}".format(cp.name, cp.hand))
-                    print('Board: {0}'.format(b))
+                    print(f'Hand: {cp.hand}')
+                    print(f'Board: {b}')
 
                     if cp.stack > 0:
                         act_valid = False
-                        act = input("{0}'s action? ".format(cp.name))
-                        while act_valid == False:
-                            if act.lower() not in ['fold', 'check', 'call', 'raise']:
-                                act = input("Invalid action! {0}'s action? ".format(cp.name))
-                            if act.lower() == 'check':
-                                if cp.chips_in < most_in:
-                                    act = input("You cannot check here. {0}'s action? ".format(cp.name))
-                                else:
+                        if cp.chips_in == most_in:
+                            act = input('Options: check, raise...')
+                            while act_valid == False:
+                                if act.lower() not in ['check', 'raise']:
+                                    act = input("Invalid action! Options: check, raise... ")
+                                if act.lower() == 'check':
                                     act_valid = True
-                            elif act.lower() == 'fold':
-                                cp.chips_in = 0
-                                cp.still_in = False
-                                act_valid = True
-                            elif act.lower() == 'call':
-                                if cp.stack >= (most_in - cp.chips_in):
-                                    pot += (most_in - cp.chips_in)
-                                    cp.bet(most_in - cp.chips_in)
+                                elif act.lower() == 'raise':
+                                    amount = int(input('By how much? '))
+                                    if amount > cp.stack or amount <= (most_in - cp.chips_in):
+                                        act = input("You cannot bet that amount. Options: check, raise... ")
+                                    else:
+                                        cp.bet(amount)
+                                        pot += amount
+                                        most_in = cp.chips_in
+                                        last = (current + len(players) - 1) % len(players)
+                                        while players[last].still_in == False:
+                                            last = (last - 1) % len(players)
+                                        act_valid = True
+                        else:
+                            act = input('Options: fold, call, raise... ')
+                            while act_valid == False:
+                                if act.lower() not in ['fold', 'call', 'raise']:
+                                    act = input("Invalid action! Options: fold, call, raise... ")
+                                if act.lower() == 'fold':
+                                    cp.chips_in = 0
+                                    cp.still_in = False
                                     act_valid = True
-                                else:
-                                    cp.bet(cp.stack)
-                                    pot += cp.stack
-                                    act_valid = True
-                            elif act.lower() == 'raise':
-                                amount = int(input('By how much? '))
-                                if amount > cp.stack or amount <= (most_in - cp.chips_in):
-                                    act = input("You cannot bet that amount. {0}'s action? ".format(cp.name))
-                                else:
-                                    cp.bet(amount)
-                                    pot += amount
-                                    most_in = cp.chips_in
-                                    last = (current + len(players) - 1) % len(players)
-                                    while players[last].still_in == False:
-                                        last = (last - 1) % len(players)
-                                    act_valid = True
+                                elif act.lower() == 'call':
+                                    if cp.stack >= (most_in - cp.chips_in):
+                                        pot += (most_in - cp.chips_in)
+                                        cp.bet(most_in - cp.chips_in)
+                                        act_valid = True
+                                    else:
+                                        cp.bet(cp.stack)
+                                        pot += cp.stack
+                                        act_valid = True
+                                elif act.lower() == 'raise':
+                                    amount = int(input('By how much? '))
+                                    if amount > cp.stack or amount <= (most_in - cp.chips_in):
+                                        act = input("You cannot bet that amount. Options: fold, call, raise... ")
+                                    else:
+                                        cp.bet(amount)
+                                        pot += amount
+                                        most_in = cp.chips_in
+                                        last = (current + len(players) - 1) % len(players)
+                                        while players[last].still_in == False:
+                                            last = (last - 1) % len(players)
+                                        act_valid = True
                     if current == last:
                         break
                     current = (current + 1) % len(players)
             if i < 3:
                 d.deal(b)
+            # FOLDED CASE
             if len([p for p in players if p.still_in]) == 1:
                 round_over = True
                 for p in players:
@@ -81,13 +100,16 @@ def play_game(small_amt, big_amt, start_amt):
                         p.stack += pot
                         p.chips_in = 0
                 break
+
             current = 0
             last = len(players) - 1
             while players[last].still_in == False:
                 last = (last - 1) % len(players)
 
+        # CARDS SHOWN CASE
         if not round_over:
             winner = max([p for p in players if p.still_in], key=lambda x: x.hand.score(b))
+            winner.stack += pot
             print('Board: {0}'.format(b))
             for p in list(players):
                 if p.still_in:
@@ -98,15 +120,16 @@ def play_game(small_amt, big_amt, start_amt):
                 if p.stack == 0:
                     players.remove(p)
             print("{0} wins {1}!".format(winner.name, str(pot)))
-            winner.stack += pot
 
+        # GAME OVER CASE
         if len(players) == 1:
             return print(players[0].name, ' wins!')
+        # PLAYING MORE ROUNDS CASE
         else:
             players.append(players.pop(0))
             play_rounds(players)
 
-
+    # GAME INITIALIZATION
     player_list = []
     num = 0
     while num < 2:
