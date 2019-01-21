@@ -138,8 +138,10 @@ def play_game(small_amt, big_amt, start_amt):
     while num < 2:
         try:
             num = int(input('How many players? '))
+            if num < 2:
+                print('Poker needs at least 2 players!')
         except ValueError:
-            print('Poker needs at least 2 players!')
+            print("That's not a whole number!")
 
     for p in range(num):
         player_list.append(Player(input("Player {0} name? ".format(str(p + 1))), start_amt))
