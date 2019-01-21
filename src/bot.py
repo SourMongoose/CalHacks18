@@ -52,9 +52,11 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                     else:
                         if cp.stack > 0:
                             act_valid = False
-                            s = ''
-                            s += f'It is {cp.name}\'s turn\n'
-                            s += f'Stack: {cp.stack}\n'
+                            s = ' Name\tStack\tBet\n'
+                            for p in players:
+                                if p is cp:
+                                    s += '*'
+                                s += f' {p.name}\t{p.stack}\t{p.chips_in}\n'
                             s += f'Pot: {str(pot)}\n'
                             s += f'Hand: {cp.hand}\n'
                             s += f'Board: {b}'
