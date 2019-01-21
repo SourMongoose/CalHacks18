@@ -52,15 +52,13 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                     else:
                         if cp.stack > 0:
                             act_valid = False
-                            s = ' Name\tStack\tBet\n'
+                            s = '```  Name\tStack\tBet\n'
                             for p in players:
-                                if p is cp:
-                                    s += f'* {p.name}\t{p.stack}\t{p.chips_in}\n'
-                                else:
-                                    s += f'  {p.name}\t{p.stack}\t{p.chips_in}\n'
+                                s += '*' if p is cp else ' '
+                                s += f' {p.name}\t{p.stack}\t{p.chips_in}\n'
                             s += f'Pot: {str(pot)}\n'
                             s += f'Hand: {cp.hand}\n'
-                            s += f'Board: {b}'
+                            s += f'Board: {b}```'
                             await ch.send(s)
                             if cp.chips_in == most_in:
                                 act = await input('Options: check, raise... ')
