@@ -24,7 +24,7 @@ def play_game(small_amt, big_amt, start_amt):
         # BETTING ROUNDS
         for i in range(4):
             # CHECKING FOR ALL-INS
-            if len([p for p in players if p.stack]) > 1:
+            if len([p for p in players if p.stack]) > 1 and len([p for p in players if p.still_in]) > 1:
                 while True:
                     # ALL FOLDED CASE
                     if len([p for p in players if p.still_in]) == 1:

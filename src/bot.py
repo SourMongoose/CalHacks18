@@ -4,12 +4,12 @@ import discord
 import asyncio
 
 async def play_game(small_amt, big_amt, start_amt, ch):
-    
+
     # ASK FOR INPUT
     async def input(prompt):
         await ch.send(prompt)
         return (await client.wait_for('message')).content
-    
+
     # ONE ROUND OF PLAY
     async def play_rounds(players):
         # INITIALIZED VARIABLES
@@ -32,7 +32,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
         # BETTING ROUNDS
         for i in range(4):
             # CHECKING FOR ALL-INS
-            if len([p for p in players if p.stack]) > 1:
+            if len([p for p in players if p.stack]) > 1 and len([p for p in players if p.still_in]) > 1:
                 while True:
                     # ALL FOLDED CASE
                     if len([p for p in players if p.still_in]) == 1:
@@ -179,15 +179,15 @@ async def on_ready():
 @client.event
 async def on_message(message):
     global small_blind, big_blind, starting_chips
-    
+
     msg = message.content.lower()
     ch = message.channel
     au = message.author
-    
+
     # ignore own messages
     if au.id == 536822424436473857:
         return
-    
+
     if msg.startswith('!small '):
         try:
             i = int(msg[7:])
@@ -209,12 +209,12 @@ async def on_message(message):
                 starting_chips = i
                 await ch.send(f'Starting chips set to {i}')
         except: pass
-    
+
     if msg == '!join':
         if au not in users:
             users.append(au)
             await ch.send(au.display_name + ' has joined')
-    
+
     if msg == '!start':
         if len(users) >= 2:
             await play_game(small_blind, big_blind, starting_chips, ch)
