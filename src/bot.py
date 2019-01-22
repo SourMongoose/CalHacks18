@@ -78,10 +78,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                         except:
                             act = await input('Invalid input. Options: fold, call, raise... ')
                             continue
-                        if amount == cp.stack and amount < (most_in - cp.chips_in):
-                            cp.bet(amount)
-                            act_valid = True
-                        elif amount > cp.stack or amount < most_in * 2 or amount < big_amt:
+                        if amount > cp.stack or ((amount < most_in * 2 - cp.chips_in or amount < big_amt) and amount != cp.stack):
                             act = await input('You cannot bet that amount. Options: fold, call, raise... ')
                         else:
                             cp.bet(amount)
