@@ -14,7 +14,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
 
             # ASK FOR INPUT
             async def input(prompt):
-                await ch.send(prompt)
+                if prompt: await ch.send(prompt)
                 #await asyncio.sleep(0.5)
                 msg = await client.wait_for('message', check=lambda msg: msg.author == cp.user)
                 return msg.content
@@ -25,7 +25,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                 act = await input('Options: check, raise... ')
                 while act_valid == False:
                     if act.lower()[:5] not in ['check', 'raise']:
-                        act = await input("Invalid action! Options: check, raise... ")
+                        act = await input('')
                     if act.lower() == 'check':
                         act_valid = True
                     elif act.lower() == 'raise' or act.lower().startswith('raise'):
@@ -54,7 +54,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                 act = await input('Options: fold, call, raise... ')
                 while act_valid == False:
                     if act.lower()[:5] not in ['fold', 'call', 'raise']:
-                        act = await input("Invalid action! Options: fold, call, raise... ")
+                        act = await input('')
                     if act.lower() == 'fold':
                         cp.still_in = False
                         act_valid = True
@@ -122,7 +122,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                         if cp.stack > 0:
                             s = f'```  {"Name":<14s}  {"Stack":<5s}  {"Bet":<5s}\n'
                             s += '  '+'-'*26+'\n'
-                            for i in range(len(players)):
+                            for i in range(len(users)):
                                 for p in players:
                                     if p.place == i:
                                         temp_name = p.name if len(p.name) <= 14 else p.name[:11]+'...'
