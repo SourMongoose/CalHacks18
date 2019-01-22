@@ -18,8 +18,8 @@ async def play_game(small_amt, big_amt, start_amt, ch):
         small.bet(small_amt)
         big.bet(big_amt)
         pot = 0
-        await ch.send("Small blind: {0}".format(players[0].name))
-        await ch.send("Big blind: {0}".format(players[1].name))
+        #await ch.send("Small blind: {0}".format(players[0].name))
+        #await ch.send("Big blind: {0}".format(players[1].name))
         most_in = big.chips_in
         last = 1
         current = (last + 1) % len(players)
@@ -47,10 +47,12 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                             act_valid = False
                             s = f'```  {"Name":<14s}  {"Stack":<5s}  {"Bet":<5s}\n'
                             s += '  '+'-'*26+'\n'
-                            for p in players:
-                                temp_name = p.name if len(p.name) <= 14 else p.name[:11]+'...'
-                                s += '*' if p is cp else ' '
-                                s += ' {:<14s}  {:<5s}  {:<5s}\n'.format(temp_name, str(p.stack), str(p.chips_in))
+                            for i in range(len(players)):
+                                for p in players:
+                                    if p.place == i:
+                                        temp_name = p.name if len(p.name) <= 14 else p.name[:11]+'...'
+                                        s += '*' if p is cp else ' '
+                                        s += ' {:<14s}  {:<5s}  {:<5s}\n'.format(temp_name, str(p.stack), str(p.chips_in))
                             s += f'Pot: {str(pot)}\n'
                             s += f'Hand: {cp.hand}\n'
                             s += f'Board: {b}```'
@@ -149,15 +151,16 @@ async def play_game(small_amt, big_amt, start_amt, ch):
     # GAME INITIALIZATION
     player_list = []
     for p in range(len(users)):
-        player_list.append(Player(users[p], start_amt))
+        player_list.append(Player(users[p], start_amt, p))
     await play_rounds(player_list)
 
 class Player:
-    def __init__(self, user, stack):
+    def __init__(self, user, stack, place=0):
         self.still_in = True
         self.chips_in = 0
         self.user = user
         self.name = user.display_name
+        self.place = place
         self.stack = stack
         self.hand = poker.Hand()
     def bet(self, amount):
