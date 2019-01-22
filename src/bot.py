@@ -122,9 +122,9 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                         if cp.stack > 0:
                             s = f'```  {"Name":<14s}  {"Stack":<5s}  {"Bet":<5s}\n'
                             s += '  '+'-'*26+'\n'
-                            for i in range(len(users)):
+                            for u in range(len(users)):
                                 for p in players:
-                                    if p.place == i:
+                                    if p.place == u:
                                         temp_name = p.name if len(p.name) <= 14 else p.name[:11]+'...'
                                         s += '*' if p is cp else ' '
                                         s += ' {:<14s}  {:<5s}  {:<5s}\n'.format(temp_name, str(p.stack), str(p.chips_in))
@@ -170,11 +170,11 @@ async def play_game(small_amt, big_amt, start_amt, ch):
             for p in list(players):
                 if p.still_in:
                     await ch.send("{0}'s hand: {1}".format(p.name, p.hand))
-                if p in winners:
-                    await ch.send("{0} wins {1}!".format(p.name, str(pot // len(winners))))
                 p.reset()
                 if p.stack == 0:
                     players.remove(p)
+            for w in winners:
+                await ch.send("{0} wins {1}!".format(w.name, str(pot // len(winners))))
 
 
 
