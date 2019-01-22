@@ -110,7 +110,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
             if round_over:
                 break
             # CHECKING FOR ALL-INS
-            if len([p for p in players if p.stack]) > 1 and len([p for p in players if p.still_in]) > 1:
+            if len([p for p in players if p.stack and p.still_in]) > 1:
                 while True:
                     cp = players[current]
 
