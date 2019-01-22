@@ -9,7 +9,7 @@ def play_game(small_amt, big_amt, start_amt):
         big = players[1]
         small.bet(small_amt)
         big.bet(big_amt)
-        pot = small_amt + big_amt
+        pot = small_amt + big
         print("Small blind: {0}".format(players[0].name))
         print("Big blind: {0}".format(players[1].name))
         most_in = big.chips_in
@@ -23,18 +23,11 @@ def play_game(small_amt, big_amt, start_amt):
 
         # BETTING ROUNDS
         for i in range(4):
+            if round_over:
+                break
             # CHECKING FOR ALL-INS
             if len([p for p in players if p.stack]) > 1 and len([p for p in players if p.still_in]) > 1:
                 while True:
-                    # ALL FOLDED CASE
-                    if len([p for p in players if p.still_in]) == 1:
-                        round_over = True
-                        for p in players:
-                            if p.still_in:
-                                print("{0} wins {1}!".format(p.name, str(pot)))
-                                p.stack += pot
-                            p.reset()
-                        break
                     cp = players[current]
 
                     if cp.still_in == False:
@@ -98,11 +91,20 @@ def play_game(small_amt, big_amt, start_amt):
                                             while players[last].still_in == False:
                                                 last = (last - 1) % len(players)
                                             act_valid = True
+                        # ALL FOLDED CASE
+                        if len([p for p in players if p.still_in]) == 1:
+                            round_over = True
+                            for p in players:
+                                if p.still_in:
+                                    print("{0} wins {1}!".format(p.name, str(pot)))
+                                    p.stack += pot
+                                p.reset()
+                            break
+
                         if current == last:
-                                break
+                            break
                         current = (current + 1) % len(players)
-            if round_over:
-                break
+
             if i < 3:
                 d.deal(b)
 

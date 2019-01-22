@@ -17,7 +17,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
         big = players[1]
         small.bet(small_amt)
         big.bet(big_amt)
-        pot = small_amt + big_amt
+        pot = 0
         await ch.send("Small blind: {0}".format(players[0].name))
         await ch.send("Big blind: {0}".format(players[1].name))
         most_in = big.chips_in
@@ -31,18 +31,11 @@ async def play_game(small_amt, big_amt, start_amt, ch):
 
         # BETTING ROUNDS
         for i in range(4):
+            if round_over:
+                break
             # CHECKING FOR ALL-INS
             if len([p for p in players if p.stack]) > 1 and len([p for p in players if p.still_in]) > 1:
                 while True:
-                    # ALL FOLDED CASE
-                    if len([p for p in players if p.still_in]) == 1:
-                        round_over = True
-                        for p in players:
-                            if p.still_in:
-                                await ch.send("{0} wins {1}!".format(p.name, str(pot)))
-                                p.stack += pot
-                            p.reset()
-                        break
                     cp = players[current]
 
                     if cp.still_in == False:
@@ -75,7 +68,6 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                                             act = await input('You cannot bet that amount. Options: check, raise... ')
                                         else:
                                             cp.bet(amount)
-                                            pot += amount
                                             most_in = cp.chips_in
                                             last = (current + len(players) - 1) % len(players)
                                             while players[last].still_in == False:
@@ -87,17 +79,16 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                                     if act.lower() not in ['fold', 'call', 'raise']:
                                         act = await input("Invalid action! Options: fold, call, raise... ")
                                     if act.lower() == 'fold':
+                                        pot += cp.chips_in
                                         cp.chips_in = 0
                                         cp.still_in = False
                                         act_valid = True
                                     elif act.lower() == 'call':
                                         if cp.stack >= (most_in - cp.chips_in):
-                                            pot += (most_in - cp.chips_in)
                                             cp.bet(most_in - cp.chips_in)
                                             act_valid = True
                                         else:
                                             cp.bet(cp.stack)
-                                            pot += cp.stack
                                             act_valid = True
                                     elif act.lower() == 'raise':
                                         amount = int(await input('By how much? '))
@@ -105,17 +96,28 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                                             act = await input("You cannot bet that amount. Options: fold, call, raise... ")
                                         else:
                                             cp.bet(amount)
-                                            pot += amount
                                             most_in = cp.chips_in
                                             last = (current + len(players) - 1) % len(players)
                                             while players[last].still_in == False:
                                                 last = (last - 1) % len(players)
                                             act_valid = True
+                        # ALL FOLDED CASE
+                        if len([p for p in players if p.still_in]) == 1:
+                            round_over = True
+                            for p in players:
+                                if p.still_in:
+                                    await ch.send("{0} wins {1}!".format(p.name, str(pot)))
+                                    p.stack += pot
+                                p.reset()
+                            break
+
                         if current == last:
-                                break
+                            pot += sum([p.chips_in for p in players])
+                            most_in = 0
+                            for p in players:
+                                p.chips_in = 0
+                            break
                         current = (current + 1) % len(players)
-            if round_over:
-                break
             if i < 3:
                 d.deal(b)
 
