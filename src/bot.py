@@ -79,8 +79,6 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                                     if act.lower() not in ['fold', 'call', 'raise']:
                                         act = await input("Invalid action! Options: fold, call, raise... ")
                                     if act.lower() == 'fold':
-                                        pot += cp.chips_in
-                                        cp.chips_in = 0
                                         cp.still_in = False
                                         act_valid = True
                                     elif act.lower() == 'call':
@@ -104,6 +102,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                         # ALL FOLDED CASE
                         if len([p for p in players if p.still_in]) == 1:
                             round_over = True
+                            pot += sum([p.chips_in for p in players])
                             for p in players:
                                 if p.still_in:
                                     await ch.send("{0} wins {1}!".format(p.name, str(pot)))
