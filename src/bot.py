@@ -8,17 +8,17 @@ async def play_game(small_amt, big_amt, start_amt, ch):
     started = True
 
     # ONE ROUND OF PLAY
-    async def play_rounds(players):
+    async def play_rounds(players, pot=0):
 
         async def check_action(cp):
-            
+
             # ASK FOR INPUT
             async def input(prompt):
                 await ch.send(prompt)
                 await asyncio.sleep(0.5)
                 msg = await client.wait_for('message', check=lambda msg: msg.author == cp.user)
                 return msg.content
-            
+
             nonlocal last, most_in
             act_valid = False
             if cp.chips_in == most_in:
@@ -71,7 +71,6 @@ async def play_game(small_amt, big_amt, start_amt, ch):
         big = players[1]
         small.bet(small_amt)
         big.bet(big_amt)
-        pot = 0
         #await ch.send("Small blind: {0}".format(players[0].name))
         #await ch.send("Big blind: {0}".format(players[1].name))
         most_in = big.chips_in
@@ -118,6 +117,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                             pot += sum([p.chips_in for p in players])
                             for p in players:
                                 if p.still_in:
+                                    winners = [p]
                                     await ch.send("{0} wins {1}!".format(p.name, str(pot)))
                                     p.stack += pot
                                 p.reset()
@@ -140,8 +140,8 @@ async def play_game(small_amt, big_amt, start_amt, ch):
 
         # CARDS SHOWN CASE
         if not round_over:
-            winner = max([p for p in players if p.still_in], key=lambda x: x.hand.score(b))
-            winner.stack += pot
+            highest = max([p.hand.score(b) for p in players if p.still_in])
+            winners = [p for p in players if p.hand.score(b) == highest]
             await ch.send('Board: {0}'.format(b))
             for p in list(players):
                 if p.still_in:
@@ -149,7 +149,9 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                 p.reset()
                 if p.stack == 0:
                     players.remove(p)
-            await ch.send("{0} wins {1}!".format(winner.name, str(pot)))
+            for w in winners:
+                w.stack += pot // len(winners)
+                await ch.send("{0} wins {1}!".format(w.name, str(pot // len(winners))))
 
         # GAME OVER CASE
         if len(players) == 1:
@@ -158,7 +160,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
         # PLAYING MORE ROUNDS CASE
         else:
             players.append(players.pop(0))
-            await play_rounds(players)
+            await play_rounds(players, pot % len(winners))
 
     # GAME INITIALIZATION
     player_list = []
