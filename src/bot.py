@@ -29,6 +29,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
         b = poker.Board()
         for p in players:
             d.deal(p.hand)
+            await p.user.send(f'Your hand:\n{p.hand}')
         round_over = False
 
         # BETTING ROUNDS
@@ -55,8 +56,8 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                                         temp_name = p.name if len(p.name) <= 14 else p.name[:11]+'...'
                                         s += '*' if p is cp else ' '
                                         s += ' {:<14s}  {:<5s}  {:<5s}\n'.format(temp_name, str(p.stack), str(p.chips_in))
-                            s += f'Pot: {str(pot)}\n'
-                            s += f'Hand: {cp.hand}\n'
+                            s += f'\nPot: {str(pot)}\n'
+                            #s += f'Hand: {cp.hand}\n'
                             s += f'Board: {b}```'
                             await ch.send(s)
                             if cp.chips_in == most_in:
