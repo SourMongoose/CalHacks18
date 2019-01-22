@@ -7,15 +7,18 @@ async def play_game(small_amt, big_amt, start_amt, ch):
     global started
     started = True
 
-    # ASK FOR INPUT
-    async def input(prompt):
-        await ch.send(prompt)
-        return (await client.wait_for('message')).content
-
     # ONE ROUND OF PLAY
     async def play_rounds(players):
 
         async def check_action(cp):
+            
+            # ASK FOR INPUT
+            async def input(prompt):
+                await ch.send(prompt)
+                await asyncio.sleep(0.5)
+                msg = await client.wait_for('message', check=lambda msg: msg.author == cp.user)
+                return msg.content
+            
             nonlocal last, most_in
             act_valid = False
             if cp.chips_in == most_in:
@@ -150,7 +153,8 @@ async def play_game(small_amt, big_amt, start_amt, ch):
 
         # GAME OVER CASE
         if len(players) == 1:
-            return ch.send(players[0].name+' wins!')
+            await ch.send(players[0].name+' wins!')
+            return
         # PLAYING MORE ROUNDS CASE
         else:
             players.append(players.pop(0))
