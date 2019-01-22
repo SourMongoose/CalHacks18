@@ -14,6 +14,55 @@ async def play_game(small_amt, big_amt, start_amt, ch):
 
     # ONE ROUND OF PLAY
     async def play_rounds(players):
+
+        async def check_action(cp):
+            nonlocal last, most_in
+            act_valid = False
+            if cp.chips_in == most_in:
+                act = await input('Options: check, raise... ')
+                while act_valid == False:
+                    if act.lower() not in ['check', 'raise']:
+                        act = await input("Invalid action! Options: check, raise... ")
+                    if act.lower() == 'check':
+                        act_valid = True
+                    elif act.lower() == 'raise':
+                        amount = int(await input('By how much?'))
+                        if amount > cp.stack or amount <= (most_in - cp.chips_in):
+                            act = await input('You cannot bet that amount. Options: check, raise... ')
+                        else:
+                            cp.bet(amount)
+                            most_in = cp.chips_in
+                            last = (current + len(players) - 1) % len(players)
+                            while players[last].still_in == False:
+                                last = (last - 1) % len(players)
+                            act_valid = True
+            else:
+                act = await input('Options: fold, call, raise... ')
+                while act_valid == False:
+                    if act.lower() not in ['fold', 'call', 'raise']:
+                        act = await input("Invalid action! Options: fold, call, raise... ")
+                    if act.lower() == 'fold':
+                        cp.still_in = False
+                        act_valid = True
+                    elif act.lower() == 'call':
+                        if cp.stack >= (most_in - cp.chips_in):
+                            cp.bet(most_in - cp.chips_in)
+                            act_valid = True
+                        else:
+                            cp.bet(cp.stack)
+                            act_valid = True
+                    elif act.lower() == 'raise':
+                        amount = int(await input('By how much? '))
+                        if amount > cp.stack or amount <= (most_in - cp.chips_in):
+                            act = await input("You cannot bet that amount. Options: fold, call, raise... ")
+                        else:
+                            cp.bet(amount)
+                            most_in = cp.chips_in
+                            last = (current + len(players) - 1) % len(players)
+                            while players[last].still_in == False:
+                                last = (last - 1) % len(players)
+                            act_valid = True
+
         # INITIALIZED VARIABLES
         small = players[0]
         big = players[1]
@@ -47,7 +96,6 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                     # ASKING PLAYER ACTION
                     else:
                         if cp.stack > 0:
-                            act_valid = False
                             s = f'```  {"Name":<14s}  {"Stack":<5s}  {"Bet":<5s}\n'
                             s += '  '+'-'*26+'\n'
                             for i in range(len(players)):
@@ -60,50 +108,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                             #s += f'Hand: {cp.hand}\n'
                             s += f'Board: {b}```'
                             await ch.send(s)
-                            if cp.chips_in == most_in:
-                                act = await input('Options: check, raise... ')
-                                while act_valid == False:
-                                    if act.lower() not in ['check', 'raise']:
-                                        act = await input("Invalid action! Options: check, raise... ")
-                                    if act.lower() == 'check':
-                                        act_valid = True
-                                    elif act.lower() == 'raise':
-                                        amount = int(await input('By how much?'))
-                                        if amount > cp.stack or amount <= (most_in - cp.chips_in):
-                                            act = await input('You cannot bet that amount. Options: check, raise... ')
-                                        else:
-                                            cp.bet(amount)
-                                            most_in = cp.chips_in
-                                            last = (current + len(players) - 1) % len(players)
-                                            while players[last].still_in == False:
-                                                last = (last - 1) % len(players)
-                                            act_valid = True
-                            else:
-                                act = await input('Options: fold, call, raise... ')
-                                while act_valid == False:
-                                    if act.lower() not in ['fold', 'call', 'raise']:
-                                        act = await input("Invalid action! Options: fold, call, raise... ")
-                                    if act.lower() == 'fold':
-                                        cp.still_in = False
-                                        act_valid = True
-                                    elif act.lower() == 'call':
-                                        if cp.stack >= (most_in - cp.chips_in):
-                                            cp.bet(most_in - cp.chips_in)
-                                            act_valid = True
-                                        else:
-                                            cp.bet(cp.stack)
-                                            act_valid = True
-                                    elif act.lower() == 'raise':
-                                        amount = int(await input('By how much? '))
-                                        if amount > cp.stack or amount <= (most_in - cp.chips_in):
-                                            act = await input("You cannot bet that amount. Options: fold, call, raise... ")
-                                        else:
-                                            cp.bet(amount)
-                                            most_in = cp.chips_in
-                                            last = (current + len(players) - 1) % len(players)
-                                            while players[last].still_in == False:
-                                                last = (last - 1) % len(players)
-                                            act_valid = True
+                            await check_action(cp)
                         # ALL FOLDED CASE
                         if len([p for p in players if p.still_in]) == 1:
                             round_over = True
@@ -156,7 +161,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
     for p in range(len(users)):
         player_list.append(Player(users[p], start_amt, p))
     await play_rounds(player_list)
-    
+
     started = False
     users.clear()
 
@@ -224,7 +229,7 @@ async def on_message(message):
                     starting_chips = i
                     await ch.send(f'Starting chips set to {i}')
             except: pass
-    
+
         if msg == '!join':
             if True:#au not in users:
                 users.append(au)
@@ -233,7 +238,7 @@ async def on_message(message):
             if au in users:
                 users.remove(au)
                 await ch.send(au.display_name + ' has left')
-    
+
         if msg == '!start':
             if len(users) >= 2:
                 await play_game(small_blind, big_blind, starting_chips, ch)
