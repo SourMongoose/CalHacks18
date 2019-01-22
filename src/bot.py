@@ -164,16 +164,19 @@ async def play_game(small_amt, big_amt, start_amt, ch):
         if not round_over:
             highest = max([p.hand.score(b) for p in players if p.still_in])
             winners = [p for p in players if p.hand.score(b) == highest]
+            for w in winners:
+                w.stack += pot // len(winners)
             await ch.send('Board: {0}'.format(b))
             for p in list(players):
                 if p.still_in:
                     await ch.send("{0}'s hand: {1}".format(p.name, p.hand))
+                if p in winners:
+                    await ch.send("{0} wins {1}!".format(p.name, str(pot // len(winners))))
                 p.reset()
                 if p.stack == 0:
                     players.remove(p)
-            for w in winners:
-                w.stack += pot // len(winners)
-                await ch.send("{0} wins {1}!".format(w.name, str(pot // len(winners))))
+
+
 
         # GAME OVER CASE
         if len(players) == 1:
