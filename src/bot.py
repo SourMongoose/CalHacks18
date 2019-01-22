@@ -4,6 +4,8 @@ import discord
 import asyncio
 
 async def play_game(small_amt, big_amt, start_amt, ch):
+    global started
+    started = True
 
     # ASK FOR INPUT
     async def input(prompt):
@@ -142,7 +144,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
 
         # GAME OVER CASE
         if len(players) == 1:
-            return ch.send(players[0].name, 'wins!')
+            return ch.send(players[0].name+' wins!')
         # PLAYING MORE ROUNDS CASE
         else:
             players.append(players.pop(0))
@@ -153,6 +155,9 @@ async def play_game(small_amt, big_amt, start_amt, ch):
     for p in range(len(users)):
         player_list.append(Player(users[p], start_amt, p))
     await play_rounds(player_list)
+    
+    started = False
+    users.clear()
 
 class Player:
     def __init__(self, user, stack, place=0):
@@ -177,6 +182,7 @@ small_blind = 1
 big_blind = 2
 starting_chips = 80
 users = []
+started = False
 
 @client.event
 async def on_ready():
@@ -195,37 +201,42 @@ async def on_message(message):
     if au.id == 536822424436473857:
         return
 
-    if msg.startswith('!small '):
-        try:
-            i = int(msg[7:])
-            if i > 0:
-                small_blind = i
-                await ch.send(f'Small blind set to {i}')
-        except: pass
-    if msg.startswith('!big '):
-        try:
-            i = int(msg[5:])
-            if i > 0:
-                big_blind = i
-                await ch.send(f'Big blind set to {i}')
-        except: pass
-    if msg.startswith('!starting '):
-        try:
-            i = int(msg[10:])
-            if i > 0:
-                starting_chips = i
-                await ch.send(f'Starting chips set to {i}')
-        except: pass
-
-    if msg == '!join':
-        if True:#au not in users:
-            users.append(au)
-            await ch.send(au.display_name + ' has joined')
-
-    if msg == '!start':
-        if len(users) >= 2:
-            await play_game(small_blind, big_blind, starting_chips, ch)
-        else:
-            await ch.send('Poker needs at least 2 players!')
+    if not started:
+        if msg.startswith('!small '):
+            try:
+                i = int(msg[7:])
+                if i > 0:
+                    small_blind = i
+                    await ch.send(f'Small blind set to {i}')
+            except: pass
+        if msg.startswith('!big '):
+            try:
+                i = int(msg[5:])
+                if i > 0:
+                    big_blind = i
+                    await ch.send(f'Big blind set to {i}')
+            except: pass
+        if msg.startswith('!starting '):
+            try:
+                i = int(msg[10:])
+                if i > 0:
+                    starting_chips = i
+                    await ch.send(f'Starting chips set to {i}')
+            except: pass
+    
+        if msg == '!join':
+            if True:#au not in users:
+                users.append(au)
+                await ch.send(au.display_name + ' has joined')
+        if msg == '!leave':
+            if au in users:
+                users.remove(au)
+                await ch.send(au.display_name + ' has left')
+    
+        if msg == '!start':
+            if len(users) >= 2:
+                await play_game(small_blind, big_blind, starting_chips, ch)
+            else:
+                await ch.send('Poker needs at least 2 players!')
 
 client.run(tokens.bot_id)
