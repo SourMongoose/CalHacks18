@@ -52,10 +52,12 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                     else:
                         if cp.stack > 0:
                             act_valid = False
-                            s = '```  Name\tStack\tBet\n'
+                            s = f'```  {"Name":<14s}  {"Stack":<5s}  {"Bet":<5s}\n'
+                            s += '  '+'-'*26+'\n'
                             for p in players:
+                                temp_name = p.name if len(p.name) <= 14 else p.name[:11]+'...'
                                 s += '*' if p is cp else ' '
-                                s += f' {p.name}\t{p.stack}\t{p.chips_in}\n'
+                                s += ' {:<14s}  {:<5s}  {:<5s}\n'.format(temp_name, str(p.stack), str(p.chips_in))
                             s += f'Pot: {str(pot)}\n'
                             s += f'Hand: {cp.hand}\n'
                             s += f'Board: {b}```'
@@ -212,7 +214,7 @@ async def on_message(message):
         except: pass
 
     if msg == '!join':
-        if au not in users:
+        if True:#au not in users:
             users.append(au)
             await ch.send(au.display_name + ' has joined')
 
