@@ -15,7 +15,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
             # ASK FOR INPUT
             async def input(prompt):
                 await ch.send(prompt)
-                await asyncio.sleep(0.5)
+                #await asyncio.sleep(0.5)
                 msg = await client.wait_for('message', check=lambda msg: msg.author == cp.user)
                 return msg.content
 
@@ -24,12 +24,23 @@ async def play_game(small_amt, big_amt, start_amt, ch):
             if cp.chips_in == most_in:
                 act = await input('Options: check, raise... ')
                 while act_valid == False:
-                    if act.lower() not in ['check', 'raise']:
+                    if act.lower()[:5] not in ['check', 'raise']:
                         act = await input("Invalid action! Options: check, raise... ")
                     if act.lower() == 'check':
                         act_valid = True
-                    elif act.lower() == 'raise':
-                        amount = int(await input('By how much?'))
+                    elif act.lower() == 'raise' or act.lower().startswith('raise'):
+                        try:
+                            if act.lower() == 'raise':
+                                amount = int(await input('By how much?'))
+                            elif act.lower().startswith('raise to '):
+                                amount = int(act.lower()[9:]) - cp.chips_in
+                            elif act.lower().startswith('raise '):
+                                amount = int(act.lower()[6:])
+                            else:
+                                raise
+                        except:
+                            act = await input('Invalid input. Options: check, raise... ')
+                            continue
                         if amount > cp.stack or amount <= (most_in - cp.chips_in):
                             act = await input('You cannot bet that amount. Options: check, raise... ')
                         else:
@@ -42,7 +53,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
             else:
                 act = await input('Options: fold, call, raise... ')
                 while act_valid == False:
-                    if act.lower() not in ['fold', 'call', 'raise']:
+                    if act.lower()[:5] not in ['fold', 'call', 'raise']:
                         act = await input("Invalid action! Options: fold, call, raise... ")
                     if act.lower() == 'fold':
                         cp.still_in = False
@@ -54,10 +65,21 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                         else:
                             cp.bet(cp.stack)
                             act_valid = True
-                    elif act.lower() == 'raise':
-                        amount = int(await input('By how much? '))
+                    elif act.lower() == 'raise' or act.lower().startswith('raise'):
+                        try:
+                            if act.lower() == 'raise':
+                                amount = int(await input('By how much?'))
+                            elif act.lower().startswith('raise to '):
+                                amount = int(act.lower()[9:]) - cp.chips_in
+                            elif act.lower().startswith('raise '):
+                                amount = int(act.lower()[6:])
+                            else:
+                                raise
+                        except:
+                            act = await input('Invalid input. Options: fold, call, raise... ')
+                            continue
                         if amount > cp.stack or amount <= (most_in - cp.chips_in):
-                            act = await input("You cannot bet that amount. Options: fold, call, raise... ")
+                            act = await input('You cannot bet that amount. Options: fold, call, raise... ')
                         else:
                             cp.bet(amount)
                             most_in = cp.chips_in
@@ -106,9 +128,9 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                                         temp_name = p.name if len(p.name) <= 14 else p.name[:11]+'...'
                                         s += '*' if p is cp else ' '
                                         s += ' {:<14s}  {:<5s}  {:<5s}\n'.format(temp_name, str(p.stack), str(p.chips_in))
-                            s += f'\nPot: {str(pot)}\n'
+                            s += f'```\nPot: {str(pot)}\n'
                             #s += f'Hand: {cp.hand}\n'
-                            s += f'Board: {b}```'
+                            s += f'Board: {b}'
                             await ch.send(s)
                             await check_action(cp)
                         # ALL FOLDED CASE
