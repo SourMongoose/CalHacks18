@@ -88,6 +88,37 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                                 last = (last - 1) % len(players)
                             act_valid = True
 
+        async def round_winner(plist):
+            nonlocal pot, winners
+            highest = max([p.hand.score(b) for p in plist if p.still_in])
+            winners = [p for p in plist if p.hand.score(b) == highest]
+            min_chips = min([w.side_potential for w in winners])
+
+            # SIDEPOTS CASE
+            if any(p.side_potential > min_chips for p in plist):
+                sidepot = sum([p.side_potential for p in plist if p.side_potential <= min_chips])
+                for p in plist:
+                    if p.side_potential > min_chips:
+                        p.side_potential -= min_chips
+                    else:
+                        p.side_potential = 0
+                sidepot += min_chips * len([p for p in plist if p.side_potential])
+                pot -= sidepot
+                for w in winners:
+                    w.stack += sidepot // len(winners)
+                for w in winners:
+                    await ch.send("{0} wins sidepot of {1}!".format(w.name, str(sidepot // len(winners))))
+                pot += sidepot % len(winners)
+                await round_winner([p for p in plist if p.side_potential])
+
+
+            # REGULAR WIN CASE
+            else:
+                for w in winners:
+                    w.stack += pot // len(winners)
+                for w in winners:
+                    await ch.send("{0} wins {1}!".format(w.name, str(pot // len(winners))))
+
         # INITIALIZED VARIABLES
         small = players[0]
         big = players[1]
@@ -150,9 +181,11 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                             pot += sum([p.chips_in for p in players])
                             most_in = 0
                             for p in players:
+                                p.side_potential += p.chips_in
                                 p.chips_in = 0
                             break
                         current = (current + 1) % len(players)
+
             if i < 3:
                 d.deal(b)
 
@@ -163,19 +196,15 @@ async def play_game(small_amt, big_amt, start_amt, ch):
 
         # CARDS SHOWN CASE
         if not round_over:
-            highest = max([p.hand.score(b) for p in players if p.still_in])
-            winners = [p for p in players if p.hand.score(b) == highest]
-            for w in winners:
-                w.stack += pot // len(winners)
             await ch.send('Board: {0}'.format(b))
-            for p in list(players):
+            for p in players:
                 if p.still_in:
                     await ch.send("{0}'s hand: {1}".format(p.name, p.hand))
+            await round_winner(players)
+            for p in list(players):
                 p.reset()
                 if p.stack == 0:
                     players.remove(p)
-            for w in winners:
-                await ch.send("{0} wins {1}!".format(w.name, str(pot // len(winners))))
 
 
 
@@ -201,6 +230,7 @@ class Player:
     def __init__(self, user, stack, place=0):
         self.still_in = True
         self.chips_in = 0
+        self.side_potential = 0
         self.user = user
         self.name = user.display_name
         self.place = place
@@ -211,6 +241,7 @@ class Player:
         self.chips_in += amount
     def reset(self):
         self.chips_in = 0
+        self.side_potential = 0
         self.still_in = True
         self.hand.reset()
 
