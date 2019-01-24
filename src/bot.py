@@ -191,6 +191,8 @@ async def play_game(small_amt, big_amt, start_amt, ch):
 
             current = 0
             last = len(players) - 1
+            if len(users) == 2:
+                current, last = 1, 0
             while players[last].still_in == False:
                 last = (last - 1) % len(players)
 
