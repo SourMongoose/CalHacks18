@@ -1,4 +1,5 @@
 import poker
+import calc_hand
 import tokens
 import discord
 import asyncio
@@ -107,7 +108,8 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                 for w in winners:
                     w.stack += sidepot // len(winners)
                 for w in winners:
-                    await ch.send("{0} wins sidepot of {1}!".format(w.name, str(sidepot // len(winners))))
+                    await ch.send("{0} wins sidepot of {1} with {2}!".format(
+                        w.name, str(sidepot // len(winners)), calc_hand.score_to_str(highest)))
                 pot += sidepot % len(winners)
                 await round_winner([p for p in plist if p.side_potential])
 
@@ -117,7 +119,8 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                 for w in winners:
                     w.stack += pot // len(winners)
                 for w in winners:
-                    await ch.send("{0} wins {1}!".format(w.name, str(pot // len(winners))))
+                    await ch.send("{0} wins {1} with {2}!".format(
+                        w.name, str(pot // len(winners)), calc_hand.score_to_str(highest)))
 
         # INITIALIZED VARIABLES
         small = players[0]
@@ -257,7 +260,7 @@ started = False
 
 @client.event
 async def on_ready():
-    await client.change_presence(game=discord.Game(name='with a fish'))
+    await client.change_presence(game=discord.Game(name='some disciplined poker'))
     print('Ready!')
 
 @client.event
