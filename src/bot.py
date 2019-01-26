@@ -92,7 +92,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
         async def round_winner(plist):
             nonlocal pot, winners
             highest = max([p.hand.score(b) for p in plist if p.still_in])
-            winners = [p for p in plist if p.hand.score(b) == highest]
+            winners = [p for p in plist if p.hand.score(b) == highest and p.still_in]
             min_chips = min([w.side_potential for w in winners])
 
             # SIDEPOTS CASE
