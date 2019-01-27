@@ -42,7 +42,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                         except:
                             act = await input('Invalid input. Options: check, raise... ')
                             continue
-                        if amount > cp.stack or amount < big_amt:
+                        if (amount > cp.stack or amount < big_amt) and amount != cp.stack:
                             act = await input('You cannot bet that amount. Options: check, raise... ')
                         else:
                             cp.bet(amount)
@@ -79,7 +79,7 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                         except:
                             act = await input('Invalid input. Options: fold, call, raise... ')
                             continue
-                        if amount > cp.stack or ((amount < most_in * 2 - cp.chips_in or amount < big_amt) and amount != cp.stack):
+                        if (amount > cp.stack or amount < most_in * 2 - cp.chips_in or amount < big_amt) and amount != cp.stack:
                             act = await input('You cannot bet that amount. Options: fold, call, raise... ')
                         else:
                             cp.bet(amount)
@@ -125,11 +125,17 @@ async def play_game(small_amt, big_amt, start_amt, ch):
         # INITIALIZED VARIABLES
         small = players[0]
         big = players[1]
-        small.bet(small_amt)
-        big.bet(big_amt)
+        if small.stack < small_amt:
+            small.bet(small.stack)
+        else:
+            small.bet(small_amt)
+        if big.stack < big_amt:
+            big.bet(big.stack)
+        else:
+            big.bet(big_amt)
         #await ch.send("Small blind: {0}".format(players[0].name))
         #await ch.send("Big blind: {0}".format(players[1].name))
-        most_in = big.chips_in
+        most_in = max([p.chips_in for p in players])
         last = 1
         current = (last + 1) % len(players)
         d = poker.Deck()
