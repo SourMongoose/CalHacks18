@@ -327,11 +327,11 @@ async def on_message(message):
         if msg == '!join':
             if True:#au not in users:
                 users.append(au)
-                await ch.send(au.display_name + ' has joined')
+                await ch.send(au.display_name + ' has joined\nCurrent players: ' + ', '.join(p.display_name for p in users))
         if msg == '!leave':
             if au in users:
                 users.remove(au)
-                await ch.send(au.display_name + ' has left')
+                await ch.send(au.display_name + ' has left\nCurrent players: ' + ', '.join(p.display_name for p in users))
 
         if msg == '!start':
             if len(users) >= 2:
