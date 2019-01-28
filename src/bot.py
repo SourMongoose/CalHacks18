@@ -7,6 +7,7 @@ import asyncio
 async def play_game(small_amt, big_amt, start_amt, ch):
     global started
     started = True
+    ended = False
 
     # ONE ROUND OF PLAY
     async def play_rounds(players, pot=0):
@@ -15,9 +16,13 @@ async def play_game(small_amt, big_amt, start_amt, ch):
 
             # ASK FOR INPUT
             async def input(prompt):
+                nonlocal ended
                 if prompt: await ch.send(prompt)
                 #await asyncio.sleep(0.5)
                 msg = await client.wait_for('message', check=lambda msg: msg.author == cp.user)
+                if msg.content == '!endgame':
+                    await ch.send('Game ends next hand')
+                    ended = True
                 return msg.content
 
             nonlocal last, most_in
@@ -123,6 +128,9 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                         w.name, str(pot // len(winners)), calc_hand.score_to_str(highest)))
 
         # INITIALIZED VARIABLES
+        if ended:
+            await ch.send('Game ended')
+            return
         small = players[0]
         big = players[1]
         if small.stack < small_amt:
