@@ -4,6 +4,8 @@ import tokens
 import discord
 import asyncio
 
+MSG = "too many hands"
+
 async def play_game(small_amt, big_amt, start_amt, ch):
     global started
     started = True
@@ -19,9 +21,8 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                 nonlocal ended
                 if prompt: await ch.send(prompt)
                 #await asyncio.sleep(0.5)
-                msg = await client.wait_for('message', check=lambda msg: msg.author == cp.user)
+                msg = await client.wait_for('message', check=lambda msg: msg.author == cp.user or msg.content == '!endgame')
                 if msg.content == '!endgame':
-                    await ch.send('Game ends next hand')
                     ended = True
                 return msg.content
 
@@ -30,6 +31,8 @@ async def play_game(small_amt, big_amt, start_amt, ch):
             if cp.chips_in == most_in:
                 act = await input('Options: check, raise... ')
                 while act_valid == False:
+                    if act == '!endgame':
+                        return
                     if act.lower()[:5] not in ['check', 'raise']:
                         act = await input('')
                     if act.lower() == 'check':
@@ -59,6 +62,8 @@ async def play_game(small_amt, big_amt, start_amt, ch):
             else:
                 act = await input('Options: fold, call, raise... ')
                 while act_valid == False:
+                    if act == '!endgame':
+                        return
                     if act.lower()[:5] not in ['fold', 'call', 'raise']:
                         act = await input('')
                     if act.lower() == 'fold':
@@ -182,6 +187,10 @@ async def play_game(small_amt, big_amt, start_amt, ch):
                             s += f'{cp.user.mention}\'s turn'
                             await ch.send(s)
                             await check_action(cp)
+                            if ended:
+                                await ch.send('Game has been reset.')
+                                started = False
+                                return
                         # ALL FOLDED CASE
                         if len([p for p in players if p.still_in]) == 1:
                             round_over = True
@@ -274,7 +283,7 @@ started = False
 
 @client.event
 async def on_ready():
-    await client.change_presence(game=discord.Game(name='some disciplined poker'))
+    await client.change_presence(activity=discord.Game(name=MSG))
     print('Ready!')
 
 @client.event
@@ -288,6 +297,9 @@ async def on_message(message):
     # ignore own messages
     if au.id == 536822424436473857:
         return
+
+    if msg.startswith('!msg '):
+        await client.change_presence(activity=discord.Game(name=msg[5:]))
 
     if not started:
         if msg.startswith('!small '):
